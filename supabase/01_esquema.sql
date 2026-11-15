@@ -313,3 +313,13 @@ returns uuid language sql security definer set search_path = '' as $$
 $$;
 revoke all on function public.nuevo_token() from public, anon;
 grant execute on function public.nuevo_token() to authenticated;
+
+-- ---------------------------------------------------------------------
+-- 6. PERMISOS de las tablas para el usuario que ha iniciado sesión
+--    (las reglas RLS de arriba limitan cada fila a su dueño)
+-- ---------------------------------------------------------------------
+grant usage on schema public to authenticated, anon;
+grant select, update on public.perfil to authenticated;
+grant select on public.notificaciones to authenticated;
+grant select, insert, update, delete on public.categorias, public.movimientos, public.reglas, public.cuentas, public.inversiones to authenticated;
+grant usage, select on all sequences in schema public to authenticated;
