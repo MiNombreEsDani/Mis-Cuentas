@@ -12,10 +12,10 @@ Notificación Sabadell ──► MacroDroid (Android) ──► Supabase (base d
 
 - **Resumen** del mes: ingresos, gastos, balance, «Has ahorrado un X %», reparto por categorías y presupuestos.
 - **Movimientos**: lista por días, buscador y filtro *Por revisar*. Cada notificación entra sola; tú solo confirmas la categoría.
-- **Compensaciones**: si un amigo te devuelve por Bizum su parte de una cena, márcalo como *Compensación → Fiesta*: no cuenta como ingreso y reduce ese gasto (igual que hacías en el Excel).
-- **Reglas automáticas**: «si el concepto contiene MERCADONA → Comida».
-- **Patrimonio**: cuentas, efectivo e inversiones con su rentabilidad. Objetivos: superar la inflación y balance ≥ 0.
-- **Salud financiera** (0–100): ahorro, colchón de emergencia, inversión, presupuestos e ingresos propios, con recomendaciones.
+- **Compensaciones**: si un amigo te devuelve por Bizum su parte de una cena, márcalo como *Compensación → Fiesta*: no cuenta como ingreso y reduce ese gasto.
+- **Reglas automáticas**: EJ: «si el concepto contiene MERCADONA → Comida».
+- **Patrimonio**: cuentas, efectivo e inversiones con su rentabilidad. Objetivos: superar la inflación y balance ≥ 0 (de momento).
+- **Salud financiera** (0–100): ahorro, colchón de emergencia (hay que poner myinvestor y alguna manera revolut para poder llevar a cabo un seguimiento de mis inversiones desde la misma app), inversión, presupuestos e ingresos propios, con recomendaciones.
 - Exportar a CSV, modo oscuro y se puede instalar como app.
 
 ---
