@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mis Cuentas</title>
+  <meta name="description" content="Control de gastos, ingresos, inversiones y salud financiera">
+  <meta name="theme-color" content="#1f8a4c">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icons/favicon.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Pantalla de acceso -->
+  <section id="pantalla-login" class="login" hidden>
+    <div class="login-caja">
+      <img src="icons/icon-192.png" alt="" class="login-logo">
+      <h1>Mis Cuentas</h1>
+      <p class="sub">Tus gastos, ingresos e inversiones, en el móvil y en el ordenador.</p>
+      <form id="form-login">
+        <label>Email<input type="email" name="email" required autocomplete="email"></label>
+        <label>Contraseña<input type="password" name="password" required minlength="6" autocomplete="current-password"></label>
+        <button type="submit" class="btn btn-primario" data-modo="entrar">Entrar</button>
+        <button type="submit" class="btn btn-sec" data-modo="registro">Crear cuenta</button>
+        <p id="login-msg" class="msg"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- App -->
+  <div id="app" hidden>
+    <header class="cabecera">
+      <div class="marca"><img src="icons/favicon.png" alt=""><span>Mis Cuentas</span></div>
+      <nav class="tabs" id="tabs">
+        <button data-vista="resumen">Resumen</button>
+        <button data-vista="movimientos">Movimientos</button>
+        <button data-vista="patrimonio">Patrimonio</button>
+        <button data-vista="salud">Salud</button>
+        <button data-vista="ajustes">Ajustes</button>
+      </nav>
+    </header>
+
+    <main id="vista" class="vista"></main>
+
+    <button id="fab" class="fab" title="Añadir movimiento" aria-label="Añadir movimiento">+</button>
+
+    <nav class="barra-inferior" id="barra-inferior">
+      <button data-vista="resumen"><span>🏠</span>Resumen</button>
+      <button data-vista="movimientos"><span>📋</span>Movimientos</button>
+      <button data-vista="patrimonio"><span>💰</span>Patrimonio</button>
+      <button data-vista="salud"><span>❤️</span>Salud</button>
+      <button data-vista="ajustes"><span>⚙️</span>Ajustes</button>
+    </nav>
+  </div>
+
+  <!-- Ventana para formularios -->
+  <dialog id="modal" class="modal"></dialog>
+  <div id="toast" class="toast" hidden></div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
