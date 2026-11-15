@@ -24,6 +24,7 @@ const state = {
   vista: 'resumen',
   mes: claveMes(hoy),
   anio: hoy.getFullYear(),
+  trim: { anio: hoy.getFullYear(), q: Math.floor(hoy.getMonth() / 3) },
   filtro: 'todos',
   busqueda: '',
 };
@@ -193,7 +194,7 @@ function irA(vista) {
 
 function pintar() {
   const v = $('#vista');
-  const vistas = { resumen: vResumen, movimientos: vMovimientos, patrimonio: vPatrimonio, salud: vSalud, ajustes: vAjustes };
+  const vistas = { resumen: vResumen, movimientos: vMovimientos, informe: vInforme, patrimonio: vPatrimonio, salud: vSalud, ajustes: vAjustes };
   v.innerHTML = vistas[state.vista]();
   if (state.vista === 'ajustes') cargarNotificaciones();
 }
@@ -280,6 +281,64 @@ function vMovimientos() {
       <h3 class="dia">${fechaLarga(g[0].fecha)}</h3>
       <ul class="movs tarjeta">${g.map(filaMov).join('')}</ul>`).join('')
       : `<p class="vacio">${state.filtro === 'revisar' ? '¡Todo revisado! 🎉' : 'No hay movimientos.'}</p>`}`;
+}
+
+// ─────────────────────────── vista: informe trimestral ───────────────────────────
+function vInforme() {
+  const { anio, q } = state.trim;
+  const enTrim = (a, t) => m => { const d = new Date(m.fecha); return d.getFullYear() === a && Math.floor(d.getMonth() / 3) === t; };
+  const movs = movsDe(enTrim(anio, q));
+  const r = resumen(movs);
+  const tAnt = anio * 4 + q - 1;
+  const rAnt = resumen(movsDe(enTrim(Math.floor(tAnt / 4), tAnt % 4)));
+  const dif = (a, b) => b > 0 ? `<small class="nota">${a >= b ? '▲' : '▼'} ${pct(Math.abs(a - b) / b)} vs trimestre anterior</small>` : '';
+
+  // detalle de una categoría: sus movimientos agrupados por concepto, de mayor a menor
+  const detalle = (c, esGasto) => {
+    const g = new Map();
+    for (const m of movs) {
+      if ((m.categoria_id ?? null) !== (c.id ?? null)) continue;
+      if (esGasto ? m.tipo === 'ingreso' : m.tipo !== 'ingreso') continue;
+      const comp = m.tipo === 'compensacion';
+      const nombre = comp ? '↩ Compensaciones recibidas' : (m.concepto || '(sin concepto)').trim();
+      const k = nombre.toLowerCase();
+      const e = g.get(k) || { nombre, total: 0, n: 0 };
+      e.total += comp ? -Number(m.importe) : Number(m.importe); e.n++;
+      g.set(k, e);
+    }
+    return [...g.values()].sort((a, b) => b.total - a.total).map(e =>
+      `<li><span>${esc(e.nombre)}${e.n > 1 ? ` <small>×${e.n}</small>` : ''}</span><b>${eur(e.total)}</b></li>`).join('');
+  };
+
+  const ranking = (items, esGasto) => {
+    if (!items.length) return '<p class="vacio">Sin datos este trimestre.</p>';
+    const total = items.reduce((s, i) => s + Math.max(0, i.total), 0);
+    const max = Math.max(1, items[0].total);
+    return `<ol class="ranking">${items.map(({ c, total: t }, i) => `<li><details>
+      <summary>
+        <span class="pos-n">${i + 1}</span>
+        <span class="rk-txt"><span class="barra-cab"><span>${esc(c.icono)} ${esc(c.nombre)}</span>
+          <span><b>${eur(t)}</b> <small>${t < 0 ? 'compensado' : total > 0 ? pct(t / total) : ''}</small></span></span>
+          <span class="barra"><i style="width:${clamp(t / max) * 100}%;background:${esc(c.color)}"></i></span></span>
+      </summary>
+      <ul class="filas peq detalle">${detalle(c, esGasto)}</ul>
+    </details></li>`).join('')}</ol>`;
+  };
+
+  return `
+    <div class="selector">
+      <button class="btn-icono" data-accion="trim" data-n="-1" aria-label="Trimestre anterior">‹</button>
+      <strong>${q + 1}.º trimestre ${anio}<small class="rango">${MESES[q * 3]} – ${MESES[q * 3 + 2]}</small></strong>
+      <button class="btn-icono" data-accion="trim" data-n="1" aria-label="Trimestre siguiente">›</button>
+    </div>
+    <div class="kpis">
+      <div class="kpi"><small>Ingresos</small><b class="pos">${eur(r.ingresos)}</b>${dif(r.ingresos, rAnt.ingresos)}</div>
+      <div class="kpi"><small>Gastos</small><b class="neg">${eur(r.gastos)}</b>${dif(r.gastos, rAnt.gastos)}</div>
+      <div class="kpi"><small>Balance</small><b class="${r.balance < 0 ? 'neg' : 'pos'}">${eur(r.balance)}</b></div>
+    </div>
+    <section class="tarjeta"><h2>Gastos por concepto, de mayor a menor</h2>${ranking(lista(r.porGasto, 'gasto'), true)}</section>
+    <section class="tarjeta"><h2>Ingresos por concepto, de mayor a menor</h2>${ranking(lista(r.porIngreso, 'ingreso'), false)}</section>
+    <p class="ayuda centro">Toca un concepto para ver el detalle de sus movimientos.</p>`;
 }
 
 // ─────────────────────────── vista: patrimonio ───────────────────────────
@@ -620,6 +679,10 @@ document.addEventListener('click', async e => {
     case 'ir': irA(el.dataset.vista); break;
     case 'mes': state.mes = sumarMes(state.mes, Number(el.dataset.n)); pintar(); break;
     case 'anio': state.anio += Number(el.dataset.n); pintar(); break;
+    case 'trim': {
+      const t = state.trim.anio * 4 + state.trim.q + Number(el.dataset.n);
+      state.trim = { anio: Math.floor(t / 4), q: t % 4 }; pintar(); break;
+    }
     case 'filtro': state.filtro = el.dataset.f; pintar(); break;
     case 'ver-revisar': state.filtro = 'revisar'; irA('movimientos'); break;
     case 'editar-mov': formMovimiento(state.movimientos.find(m => m.id === id)); break;

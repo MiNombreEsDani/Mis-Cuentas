@@ -60,7 +60,7 @@ label.check input { width: auto; }
 .barra-inferior { display: none; }
 @media (max-width: 760px) {
   .tabs { display: none; }
-  .barra-inferior { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; bottom: 0; left: 0; right: 0; z-index: 5;
+  .barra-inferior { display: grid; grid-template-columns: repeat(6, 1fr); position: fixed; bottom: 0; left: 0; right: 0; z-index: 5;
     background: var(--tarjeta); border-top: 1px solid var(--borde); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
   .barra-inferior button { background: none; border: 0; font: 600 10.5px system-ui, sans-serif; color: var(--suave); display: grid; justify-items: center; gap: 2px; padding: 4px 0; cursor: pointer; }
   .barra-inferior span { font-size: 20px; filter: grayscale(1); opacity: .7; }
@@ -165,3 +165,16 @@ i.ing { background: var(--verde); } i.gas { background: var(--rojo); opacity: .8
   padding: 10px 18px; border-radius: 12px; z-index: 20; font-size: .92rem; max-width: 90vw; box-shadow: 0 6px 20px rgba(0,0,0,.25); }
 .toast.error { background: var(--rojo); }
 .kpis.dos { grid-template-columns: 1fr 1fr; }
+
+/* ── informe trimestral ── */
+.selector strong small.rango { display: block; font-weight: 400; font-size: .8rem; color: var(--suave); }
+.ranking { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.ranking summary { display: flex; align-items: center; gap: 12px; padding: 8px 0; cursor: pointer; list-style: none; }
+.ranking summary::-webkit-details-marker { display: none; }
+.pos-n { width: 26px; height: 26px; flex: none; border-radius: 50%; background: var(--verde-claro); color: var(--verde); font-weight: 700; font-size: .8rem; display: grid; place-items: center; }
+.rk-txt { flex: 1; min-width: 0; display: grid; }
+.rk-txt .barra { display: block; }
+.detalle { margin: 0 0 8px 38px; border-left: 2px solid var(--borde); padding-left: 12px; }
+.detalle li { padding: 6px 0; }
+.detalle li > span:first-child { display: block; }
+.centro { text-align: center; }
