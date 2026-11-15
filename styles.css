@@ -178,3 +178,5 @@ i.ing { background: var(--verde); } i.gas { background: var(--rojo); opacity: .8
 .detalle li { padding: 6px 0; }
 .detalle li > span:first-child { display: block; }
 .centro { text-align: center; }
+
+.btn-enlace { background: none; border: 0; color: var(--verde); font: inherit; font-size: .9rem; text-decoration: underline; cursor: pointer; padding: .3em; justify-self: center; }

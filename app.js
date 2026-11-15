@@ -493,6 +493,7 @@ function vAjustes() {
       <div class="fila-botones">
         <button class="btn btn-sec" data-accion="exportar">⬇️ Exportar movimientos (CSV)</button>
         ${instalarEvento ? '<button class="btn btn-sec" data-accion="instalar">📲 Instalar la app</button>' : ''}
+        <button class="btn btn-sec" data-accion="password">🔑 Cambiar contraseña</button>
         <button class="btn btn-peligro" data-accion="salir">Cerrar sesión</button>
       </div>
     </section>`;
@@ -651,6 +652,23 @@ function formCategoria(c = null) {
   });
 }
 
+function formPassword(recuperando = false) {
+  abrirFormulario({
+    titulo: recuperando ? 'Elige tu nueva contraseña' : 'Cambiar contraseña',
+    campos: [
+      { name: 'p1', label: 'Nueva contraseña (mínimo 6 caracteres)', type: 'password', required: true },
+      { name: 'p2', label: 'Repite la nueva contraseña', type: 'password', required: true },
+    ],
+    onGuardar: async d => {
+      if (d.p1.length < 6) { toast('La contraseña debe tener al menos 6 caracteres', true); return false; }
+      if (d.p1 !== d.p2) { toast('Las dos contraseñas no coinciden', true); return false; }
+      const { error } = await sb.auth.updateUser({ password: d.p1 });
+      if (error) { toast(traducirError(error.message), true); return false; }
+      toast('Contraseña cambiada ✅');
+    },
+  });
+}
+
 function formRegla() {
   abrirFormulario({
     titulo: 'Nueva regla',
@@ -707,6 +725,7 @@ document.addEventListener('click', async e => {
       if (!confirm('Tendrás que actualizar el token en MacroDroid. ¿Continuar?')) return;
       if (!fallo((await sb.rpc('nuevo_token')).error)) { toast('Token cambiado'); await recargar(); } break;
     case 'exportar': exportarCSV(); break;
+    case 'password': formPassword(); break;
     case 'instalar': instalarEvento?.prompt(); break;
     case 'salir': await sb.auth.signOut(); location.reload(); break;
   }
@@ -753,7 +772,21 @@ $('#form-login').addEventListener('submit', async e => {
   if (modoLogin === 'registro' && !r.data.session) { msg.textContent = '📧 Te hemos enviado un email para confirmar la cuenta. Ábrelo y vuelve aquí.'; return; }
 });
 
+// ¿Has olvidado tu contraseña? → email con enlace para elegir una nueva
+$('#btn-olvido').addEventListener('click', async () => {
+  const email = $('#form-login [name=email]').value.trim();
+  const msg = $('#login-msg');
+  if (!email) { msg.textContent = 'Escribe primero tu email arriba y vuelve a pulsar.'; msg.className = 'msg error'; return; }
+  msg.textContent = '…'; msg.className = 'msg';
+  const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo: location.origin + location.pathname });
+  if (error) { msg.textContent = traducirError(error.message); msg.className = 'msg error'; return; }
+  msg.textContent = '📧 Te hemos enviado un email con un enlace para elegir una contraseña nueva.';
+});
+
 function traducirError(m) {
+  if (/rate limit|security purposes/i.test(m)) return 'Demasiados intentos seguidos. Espera unos minutos y vuelve a probar.';
+  if (/different from the old/i.test(m)) return 'La contraseña nueva tiene que ser distinta de la anterior.';
+  if (/at least 6/i.test(m)) return 'La contraseña debe tener al menos 6 caracteres.';
   if (/invalid login/i.test(m)) return 'Email o contraseña incorrectos.';
   if (/not confirmed/i.test(m)) return 'Tienes que confirmar tu email primero (revisa tu correo).';
   if (/already registered/i.test(m)) return 'Ese email ya tiene cuenta. Pulsa «Entrar».';
@@ -784,6 +817,8 @@ if (SUPABASE_KEY.startsWith('PEGA')) {
     // setTimeout: Supabase recomienda no llamar a la base de datos dentro de este callback
     if (session && (!state.user || state.user.id !== session.user.id)) { state.user = session.user; setTimeout(() => alEntrar(session), 0); }
     else if (!session) { state.user = null; mostrarLogin(); }
+    // has llegado desde el enlace de «contraseña olvidada»: pedir la nueva
+    if (evento === 'PASSWORD_RECOVERY') setTimeout(() => formPassword(true), 1200);
   });
 }
 
