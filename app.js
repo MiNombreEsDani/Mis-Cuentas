@@ -22,6 +22,8 @@ const state = {
   cuentas: [],
   inversiones: [],
   reglas: [],
+  noticias: [],
+  noti: 0,
   vista: 'resumen',
   mes: claveMes(hoy),
   anio: hoy.getFullYear(),
@@ -180,6 +182,9 @@ async function cargarTodo() {
     if (data.length < 1000) break;
   }
   state.movimientos = todos;
+  // noticias: los últimos 30 informes diarios (si falla, la app sigue funcionando)
+  const n = await sb.from('noticias').select('fecha,informe').order('fecha', { ascending: false }).limit(30);
+  if (!n.error) state.noticias = n.data || [];
 }
 
 async function recargar() { await cargarTodo(); pintar(); }
@@ -195,7 +200,7 @@ function irA(vista) {
 
 function pintar() {
   const v = $('#vista');
-  const vistas = { resumen: vResumen, movimientos: vMovimientos, informe: vInforme, patrimonio: vPatrimonio, salud: vSalud, ajustes: vAjustes };
+  const vistas = { resumen: vResumen, movimientos: vMovimientos, informe: vInforme, noticias: vNoticias, patrimonio: vPatrimonio, salud: vSalud, ajustes: vAjustes };
   v.innerHTML = vistas[state.vista]();
   if (state.vista === 'ajustes') cargarNotificaciones();
 }
@@ -340,6 +345,82 @@ function vInforme() {
     <section class="tarjeta"><h2>Gastos por concepto, de mayor a menor</h2>${ranking(lista(r.porGasto, 'gasto'), true)}</section>
     <section class="tarjeta"><h2>Ingresos por concepto, de mayor a menor</h2>${ranking(lista(r.porIngreso, 'ingreso'), false)}</section>
     <p class="ayuda centro">Toca un concepto para ver el detalle de sus movimientos.</p>`;
+}
+
+// ─────────────────────────── vista: noticias ───────────────────────────
+// Ilustraciones propias por sección (dibujos de línea, sin fotos de terceros)
+const ILUS = {
+  economia:  ['#b5651d', '<path d="M6 42h36M10 42V22l8 5v-5l8 5v-5l8 5V10h6v32"/><path d="M15 34h3M23 34h3M31 34h3"/>'],
+  mercados:  ['#1f8a4c', '<path d="M6 40h36M6 8v32"/><path d="M10 32l8-9 6 5 9-13 7 6"/><path d="M33 15h7v7"/>'],
+  politica:  ['#5b5f97', '<path d="M6 42h36M9 38h30M8 18l16-10 16 10z"/><path d="M13 22v14M20 22v14M28 22v14M35 22v14"/>'],
+  geopolitica: ['#2f7fd8', '<circle cx="24" cy="24" r="17"/><path d="M7 24h34M24 7c-7 5-7 29 0 34M24 7c7 5 7 29 0 34M10 15c8 4 20 4 28 0M10 33c8-4 20-4 28 0"/>'],
+  macro:     ['#8e44ad', '<circle cx="14" cy="14" r="5"/><circle cx="34" cy="34" r="5"/><path d="M38 10L10 38"/>'],
+  deportes:  ['#d35400', '<path d="M15 8h18v10a9 9 0 0 1-18 0z"/><path d="M15 11H8c0 6 3 9 8 10M33 11h7c0 6-3 9-8 10M24 27v8M16 41h16M19 35h10"/>'],
+  ciencia:   ['#16a085', '<circle cx="24" cy="24" r="3"/><ellipse cx="24" cy="24" rx="18" ry="7"/><ellipse cx="24" cy="24" rx="18" ry="7" transform="rotate(60 24 24)"/><ellipse cx="24" cy="24" rx="18" ry="7" transform="rotate(120 24 24)"/>'],
+  tecnologia:['#34495e', '<rect x="13" y="13" width="22" height="22" rx="3"/><rect x="19" y="19" width="10" height="10"/><path d="M18 13V7M24 13V7M30 13V7M18 41v-6M24 41v-6M30 41v-6M13 18H7M13 24H7M13 30H7M41 18h-6M41 24h-6M41 30h-6"/>'],
+  sociedad:  ['#c0392b', '<circle cx="17" cy="16" r="5"/><circle cx="33" cy="18" r="4"/><path d="M7 40c0-8 4-13 10-13s10 5 10 13M29 28c7-2 12 3 12 12"/>'],
+  otras:     ['#6b7872', '<rect x="8" y="9" width="28" height="30" rx="2"/><path d="M36 15h5v20a4 4 0 0 1-4 4M13 16h18M13 23h18M13 30h10"/>'],
+};
+function ilus(titulo) {
+  const t = (titulo || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const k = /deport/.test(t) ? 'deportes' : /cienc|ingenier/.test(t) ? 'ciencia' : /tecnolog|\bia\b|energ/.test(t) ? 'tecnologia'
+    : /macro/.test(t) ? 'macro' : /geopol|internacional/.test(t) ? 'geopolitica' : /politic/.test(t) ? 'politica'
+    : /finan|mercad|bolsa/.test(t) ? 'mercados' : /econom|empresa/.test(t) ? 'economia' : /socied/.test(t) ? 'sociedad' : 'otras';
+  const [color, trazos] = ILUS[k];
+  return { color, svg: `<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${trazos}</svg>` };
+}
+const enlaceSeguro = u => /^https?:\/\//i.test(u || '');
+
+function tarjetaNoticia(n, seccion, portada = false) {
+  const il = ilus(seccion);
+  const fuentes = (n.fuentes || []).filter(f => enlaceSeguro(f.url)).map(f =>
+    `<a href="${esc(f.url)}" target="_blank" rel="noopener noreferrer">${esc(f.nombre || 'Fuente')}</a>`).join(' · ');
+  const desarrollo = n.estado === 'en desarrollo';
+  return `<article class="noticia ${n.destacada ? 'destacada' : ''} ${portada ? 'portada' : ''}" style="--sec:${il.color}">
+    ${n.destacada ? `<div class="ilustracion">${il.svg}<span>${esc(seccion)}</span></div>` : ''}
+    <div class="noticia-cuerpo">
+      <h3>${esc(n.titular)}</h3>
+      ${desarrollo ? '<span class="etq-desarrollo">En desarrollo</span>' : ''}
+      ${n.cifra?.valor ? `<div class="cifra"><b>${esc(n.cifra.valor)}</b><span>${esc(n.cifra.etiqueta || '')}</span></div>` : ''}
+      <p class="entradilla">${esc(n.que)}</p>
+      ${n.contexto ? `<p><b>Por qué importa.</b> ${esc(n.contexto)}</p>` : ''}
+      ${n.vigilar ? `<p><b>Qué vigilar.</b> ${esc(n.vigilar)}</p>` : ''}
+      ${desarrollo && n.no_confirmado ? `<p class="sin-confirmar"><b>Sin confirmar.</b> ${esc(n.no_confirmado)}</p>` : ''}
+      ${fuentes ? `<p class="fuentes">Fuentes: ${fuentes}</p>` : ''}
+    </div>
+  </article>`;
+}
+
+function vNoticias() {
+  if (!state.noticias.length) return `<section class="tarjeta"><h2>Noticias</h2>
+    <p class="vacio">Todavía no hay ningún informe. Llega uno nuevo cada mañana antes de las 6:00.</p></section>`;
+  const i = clamp(state.noti, 0, state.noticias.length - 1);
+  const { fecha, informe: inf } = state.noticias[i];
+  const d = new Date(fecha + 'T12:00:00');
+  const fechaTxt = d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const secciones = (inf.secciones || []).filter(s => (s.noticias || []).length);
+  // la primera noticia destacada va en portada
+  let portada = null;
+  for (const s of secciones) { const n = s.noticias.find(x => x.destacada); if (n) { portada = { n, s }; break; } }
+  const total = secciones.reduce((a, s) => a + s.noticias.length, 0);
+  return `
+    <header class="cabecera-diario">
+      <div class="selector">
+        <button class="btn-icono" data-accion="noti" data-n="1" ${i >= state.noticias.length - 1 ? 'disabled' : ''} aria-label="Día anterior">‹</button>
+        <div><h1>El Diario de Mis Cuentas</h1><p>${fechaTxt} · ${total} noticias</p></div>
+        <button class="btn-icono" data-accion="noti" data-n="-1" ${i <= 0 ? 'disabled' : ''} aria-label="Día siguiente">›</button>
+      </div>
+    </header>
+    ${(inf.resumen || []).length ? `<section class="tarjeta en-breve"><h2>En breve</h2><ol>${inf.resumen.map(p => `<li>${esc(p)}</li>`).join('')}</ol></section>` : ''}
+    ${portada ? tarjetaNoticia(portada.n, portada.s.titulo, true) : ''}
+    ${secciones.map(s => {
+      const resto = s.noticias.filter(n => !portada || n !== portada.n);
+      if (!resto.length) return '';
+      const il = ilus(s.titulo);
+      return `<h2 class="titulo-seccion" style="--sec:${il.color}"><i>${il.svg}</i>${esc(s.titulo)}</h2>
+        <div class="rejilla-noticias">${resto.map(n => tarjetaNoticia(n, s.titulo)).join('')}</div>`; }).join('')}
+    ${(inf.vigilar || []).length ? `<section class="tarjeta agenda"><h2>Qué vigilar hoy y mañana</h2><ul>${inf.vigilar.map(p => `<li>${esc(p)}</li>`).join('')}</ul></section>` : ''}
+    <p class="ayuda centro">Informe elaborado automáticamente con inteligencia artificial a partir de las fuentes enlazadas. Puede contener errores: contrasta lo importante en la fuente original.</p>`;
 }
 
 // ─────────────────────────── vista: patrimonio ───────────────────────────
@@ -698,6 +779,7 @@ document.addEventListener('click', async e => {
     case 'ir': irA(el.dataset.vista); break;
     case 'mes': state.mes = sumarMes(state.mes, Number(el.dataset.n)); pintar(); break;
     case 'anio': state.anio += Number(el.dataset.n); pintar(); break;
+    case 'noti': state.noti = clamp(state.noti + Number(el.dataset.n), 0, Math.max(0, state.noticias.length - 1)); pintar(); window.scrollTo(0, 0); break;
     case 'trim': {
       const t = state.trim.anio * 4 + state.trim.q + Number(el.dataset.n);
       state.trim = { anio: Math.floor(t / 4), q: t % 4 }; pintar(); break;

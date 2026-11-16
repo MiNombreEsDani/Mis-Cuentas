@@ -180,3 +180,48 @@ i.ing { background: var(--verde); } i.gas { background: var(--rojo); opacity: .8
 .centro { text-align: center; }
 
 .btn-enlace { background: none; border: 0; color: var(--verde); font: inherit; font-size: .9rem; text-decoration: underline; cursor: pointer; padding: .3em; justify-self: center; }
+
+/* ── engranaje de ajustes en la cabecera ── */
+.btn-engranaje { margin-left: auto; background: none; border: 0; font-size: 20px; width: 38px; height: 38px; border-radius: 50%; cursor: pointer; }
+.btn-engranaje.activo, .btn-engranaje:hover { background: rgba(255,255,255,.2); }
+
+/* ── noticias: aspecto de periódico ── */
+.cabecera-diario { border-top: 3px double var(--texto); border-bottom: 1px solid var(--texto); padding: 8px 0 6px; margin-bottom: 14px; text-align: center; }
+.cabecera-diario .selector { margin: 0; justify-content: space-between; }
+.cabecera-diario h1 { font: 700 1.55rem/1.1 Georgia, "Times New Roman", serif; margin: 0; letter-spacing: -.01em; }
+.cabecera-diario p { margin: 3px 0 0; font-size: .8rem; color: var(--suave); }
+.cabecera-diario p::first-letter { text-transform: uppercase; }
+.btn-icono:disabled { opacity: .25; cursor: default; }
+.en-breve { border-left: 4px solid var(--verde); }
+.en-breve ol { margin: 0; padding-left: 1.3em; display: grid; gap: .45em; }
+.en-breve li::marker { font-weight: 700; color: var(--verde); }
+.titulo-seccion { display: flex; align-items: center; gap: 8px; margin: 22px 0 10px; padding-bottom: 6px; border-bottom: 2px solid var(--sec);
+  font: 700 1.05rem Georgia, serif; text-transform: uppercase; letter-spacing: .05em; color: var(--sec); }
+.titulo-seccion i { width: 24px; height: 24px; display: block; } .titulo-seccion svg { width: 100%; height: 100%; }
+.rejilla-noticias { display: grid; gap: 14px; }
+@media (min-width: 761px) { .rejilla-noticias { grid-template-columns: 1fr 1fr; align-items: start; } .rejilla-noticias .destacada { grid-column: 1 / -1; } }
+.noticia { background: var(--tarjeta); border-radius: var(--radio); box-shadow: var(--sombra); overflow: hidden; }
+.noticia-cuerpo { padding: 14px 16px; }
+.noticia h3 { font: 700 1.12rem/1.25 Georgia, "Times New Roman", serif; color: var(--texto); text-transform: none; letter-spacing: 0; margin: 2px 0 8px; }
+.noticia p { margin: 0 0 .6em; font-size: .93rem; }
+.noticia .entradilla { font-size: .98rem; }
+.antetitulo { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--sec); }
+.ilustracion { height: 96px; display: flex; align-items: flex-end; justify-content: space-between; padding: 10px 16px; color: #fff;
+  background: linear-gradient(120deg, var(--sec), color-mix(in srgb, var(--sec) 55%, #000)); position: relative; overflow: hidden; }
+.ilustracion svg { position: absolute; right: -6px; top: -14px; width: 130px; height: 130px; opacity: .32; stroke-width: 1.4; }
+.ilustracion span { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; position: relative; }
+.noticia.destacada h3 { font-size: 1.3rem; }
+.noticia.portada { margin-bottom: 6px; }
+.noticia.portada .ilustracion { height: 150px; } .noticia.portada .ilustracion svg { width: 190px; height: 190px; }
+.noticia.portada h3 { font-size: 1.6rem; line-height: 1.15; }
+.cifra { float: right; margin: 2px 0 8px 14px; padding: 8px 12px; max-width: 46%; text-align: center; border-radius: 12px;
+  background: color-mix(in srgb, var(--sec) 12%, transparent); border: 1px solid color-mix(in srgb, var(--sec) 35%, transparent); }
+.cifra b { display: block; font: 700 1.45rem/1.1 Georgia, serif; color: var(--sec); white-space: nowrap; }
+.cifra span { display: block; font-size: .7rem; color: var(--suave); line-height: 1.25; margin-top: 3px; }
+.etq-desarrollo { display: inline-block; background: #fff4e0; color: #8a5a00; font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 6px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .04em; }
+.sin-confirmar { background: #fff4e0; color: #6b4700; padding: 8px 10px; border-radius: 8px; }
+@media (prefers-color-scheme: dark) { .sin-confirmar, .etq-desarrollo { background: #3a2c10; color: #f3c46b; } }
+.fuentes { font-size: .8rem !important; color: var(--suave); clear: both; padding-top: 8px; border-top: 1px solid var(--borde); margin-bottom: 0 !important; }
+.fuentes a { color: var(--verde); }
+.agenda { margin-top: 20px; border-left: 4px solid var(--naranja); }
+.agenda ul { margin: 0; padding-left: 1.2em; display: grid; gap: .4em; }
