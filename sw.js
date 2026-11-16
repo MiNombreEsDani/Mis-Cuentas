@@ -1,7 +1,7 @@
 // Service worker: permite instalar la app y abrirla rápido.
 // Los datos siempre se piden en directo a Supabase (no se guardan aquí).
-const VERSION = 'mis-cuentas-v3';
-const ARCHIVOS = ['./', 'index.html', 'styles.css', 'app.js', 'config.js', 'manifest.webmanifest',
+const VERSION = 'mis-cuentas-v4';
+const ARCHIVOS = ['./', 'index.html', 'styles.css', 'app.js', 'config.js', 'vendor/supabase-2.119.0.js', 'manifest.webmanifest',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/favicon.png'];
 
 self.addEventListener('install', e => {

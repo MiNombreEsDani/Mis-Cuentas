@@ -268,7 +268,8 @@ begin
 
   select * into v_leido from public.leer_notificacion(p_texto);
   if v_leido.importe is null then
-    insert into public.notificaciones (user_id, titulo, texto, resultado) values (v_user, p_titulo, p_texto, 'ignorado');
+    -- no es un movimiento: NO se guarda el texto (podría ser un código de seguridad)
+    insert into public.notificaciones (user_id, titulo, texto, resultado) values (v_user, null, '(aviso sin importe: texto no guardado)', 'ignorado');
     return json_build_object('resultado', 'ignorado', 'motivo', 'no contiene importe');
   end if;
 
@@ -323,3 +324,6 @@ grant select, update on public.perfil to authenticated;
 grant select on public.notificaciones to authenticated;
 grant select, insert, update, delete on public.categorias, public.movimientos, public.reglas, public.cuentas, public.inversiones to authenticated;
 grant usage, select on all sequences in schema public to authenticated;
+
+-- Quitar permisos por defecto que la app no usa
+revoke truncate, references, trigger on all tables in schema public from anon, authenticated;

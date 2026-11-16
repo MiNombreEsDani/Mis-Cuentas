@@ -1,7 +1,8 @@
 // ═════════════════════════════════════════════════════════════
 //  MIS CUENTAS · app principal
 // ═════════════════════════════════════════════════════════════
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+// La librería de Supabase va incluida en el repositorio (vendor/), con versión fija
+const { createClient } = window.supabase;
 import { SUPABASE_URL, SUPABASE_KEY } from './config.js';
 
 const $ = (s, el = document) => el.querySelector(s);
