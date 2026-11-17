@@ -327,22 +327,3 @@ grant usage, select on all sequences in schema public to authenticated;
 
 -- Quitar permisos por defecto que la app no usa
 revoke truncate, references, trigger on all tables in schema public from anon, authenticated;
-
--- ---------------------------------------------------------------------
--- 7. NOTICIAS DIARIAS (las escribe una tarea programada; la app solo las lee)
--- ---------------------------------------------------------------------
-create table if not exists public.noticias (
-  id       bigint generated always as identity primary key,
-  user_id  uuid not null references auth.users(id) on delete cascade,
-  fecha    date not null,
-  informe  jsonb not null,
-  creado   timestamptz not null default now(),
-  unique (user_id, fecha)
-);
-alter table public.noticias enable row level security;
-drop policy if exists "solo_mis_datos" on public.noticias;
-create policy "solo_mis_datos" on public.noticias for select to authenticated
-  using (user_id = (select auth.uid()));
-revoke all on public.noticias from anon, authenticated;
-grant select on public.noticias to authenticated;
--- (la función guardar_noticias(fecha, informe) solo puede usarse desde el panel o el conector de Supabase)
