@@ -60,7 +60,7 @@ label.check input { width: auto; }
 .barra-inferior { display: none; }
 @media (max-width: 760px) {
   .tabs { display: none; }
-  .barra-inferior { display: grid; grid-template-columns: repeat(6, 1fr); position: fixed; bottom: 0; left: 0; right: 0; z-index: 5;
+  .barra-inferior { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; bottom: 0; left: 0; right: 0; z-index: 5;
     background: var(--tarjeta); border-top: 1px solid var(--borde); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
   .barra-inferior button { background: none; border: 0; font: 600 10.5px system-ui, sans-serif; color: var(--suave); display: grid; justify-items: center; gap: 2px; padding: 4px 0; cursor: pointer; }
   .barra-inferior span { font-size: 20px; filter: grayscale(1); opacity: .7; }
